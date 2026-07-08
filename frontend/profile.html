@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile & Logistics - Mystery Pop</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" integrity="sha512-b2QcS5SsA8tZodcDtGRELiGv5SaKSk1vDHDaQRda0htPYWZ6046lr3kJ5bAAQdpV2mmA/4v0wQF9MyU6/pDIAg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .profile-card { margin-bottom: 1rem; }
+    .progress-list { list-style: none; padding-left: 0; }
+    
+    /* Pending/Incomplete Steps (Light Mode) */
+    .progress-list li {
+      padding: 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: .75rem;
+      margin-bottom: .75rem;
+      background: #f8fafc;
+      color: #334155 !important;
+      transition: all 0.3s ease;
+    }
+    .progress-list li strong {
+      color: #1e293b !important;
+    }
+    .progress-list li .text-muted {
+      color: #64748b !important;
+    }
+    
+    /* Completed Steps (Light Mode) */
+    .progress-list li.completed {
+      background: #e0f2fe !important;
+      border-color: #0ea5e9 !important;
+      color: #0369a1 !important;
+    }
+    .progress-list li.completed strong {
+      color: #0369a1 !important;
+    }
+    .progress-list li.completed .text-muted {
+      color: #0284c7 !important;
+    }
+
+    /* Pending/Incomplete Steps (Dark Mode) */
+    body.dark-mode .progress-list li {
+      background: rgba(255, 255, 255, 0.03) !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+      color: #cbd5e1 !important;
+    }
+    body.dark-mode .progress-list li strong {
+      color: #f1f5f9 !important;
+    }
+    body.dark-mode .progress-list li .text-muted {
+      color: #94a3b8 !important;
+    }
+
+    /* Completed Steps (Dark Mode) */
+    body.dark-mode .progress-list li.completed {
+      background: rgba(14, 165, 233, 0.15) !important;
+      border-color: #0ea5e9 !important;
+      color: #e0f2fe !important;
+    }
+    body.dark-mode .progress-list li.completed strong {
+      color: #f0f9ff !important;
+    }
+    body.dark-mode .progress-list li.completed .text-muted {
+      color: #38bdf8 !important;
+    }
+
+    .audit-table td, .audit-table th { vertical-align: middle; }
+  </style>
+</head>
+<body class="light-mode public-page profile-page">
+  <nav class="custom-navbar">
+    <div class="container-fluid">
+      <div class="navbar-content">
+        <a class="navbar-brand" href="index.html">Mystery Pop</a>
+        <div class="navbar-right">
+          <div id="navLinks" class="nav-items"></div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="site-content">
+    <section class="page-section">
+      <div class="section-header">
+        <h1 class="section-title">Profile & Logistics</h1>
+        <p class="section-subtitle">Your personal vault record and shipment tracking dashboard.</p>
+      </div>
+
+      <div class="container">
+        <div class="row">
+          <div class="col-xl-4">
+            <div class="card profile-card">
+              <div class="card-body text-center">
+                <h3 class="h5 mb-3 text-start">Profile Overview</h3>
+                <div class="d-flex flex-column align-items-center mb-3">
+                  <div class="position-relative mb-2" style="width: 120px; height: 120px;">
+                    <img id="avatarImage" src="https://via.placeholder.com/120?text=Avatar" class="rounded-circle border shadow-sm" style="width: 120px; height: 120px; object-fit: cover;" alt="Avatar" />
+                    <label for="avatarUploadInput" class="btn btn-sm btn-dark position-absolute bottom-0 end-0 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; padding: 0; cursor: pointer; border: 2px solid white;" title="Change profile picture">
+                      <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" id="avatarUploadInput" accept="image/*" style="display: none;" />
+                  </div>
+                  <span id="avatarUploadStatus" class="small text-muted">Click the camera to upload</span>
+                </div>
+                <div class="text-start">
+                  <p><strong>Name:</strong> <span id="profileName"></span></p>
+                  <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+                  <p><strong>User role:</strong> <span id="profileRole"></span></p>
+                  <p><strong>Active cart:</strong> <span id="profileCartOwner"></span></p>
+                </div>
+                <a href="orders.html" class="btn btn-outline-primary w-100 mt-2">View Order History</a>
+              </div>
+            </div>
+
+            <div class="card profile-card">
+              <div class="card-body">
+                <h3 class="h5 mb-3">Shipping Tracker</h3>
+                <ul class="progress-list" id="shippingTrackerList"></ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-8">
+            <div class="card profile-card">
+              <div class="card-body">
+                <h3 class="h5 mb-3">Pull Audit Log</h3>
+                <div class="table-responsive">
+                  <table class="table audit-table">
+                    <thead>
+                      <tr>
+                        <th>Order</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Unboxing</th>
+                      </tr>
+                    </thead>
+                    <tbody id="auditLogBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="hero-footer">
+    <div class="footer-left"></div>
+    <div class="footer-center">© 2026 Mystery Pop</div>
+    <div class="footer-right">
+      <div class="footer-links"></div>
+    </div>
+  </div>
+
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="common.js"></script>
+  <script>
+    const TRACKING_STEPS = [
+      { label: 'Order Placed', completed: true },
+      { label: 'Vault Request Accepted', completed: true },
+      { label: 'Packaging Initiated', completed: true },
+      { label: 'Shipment Dispatched', completed: false },
+      { label: 'Out for Delivery', completed: false },
+      { label: 'Delivered', completed: false }
+    ];
+
+    function renderTrackingSteps() {
+      const tracker = document.getElementById('shippingTrackerList');
+      tracker.innerHTML = TRACKING_STEPS.map(step => `<li class="${step.completed ? 'completed' : ''}"><strong>${step.label}</strong><div class="text-muted">${step.completed ? 'Completed' : 'Pending'}</div></li>`).join('');
+    }
+
+    async function loadAuditLog() {
+      const tableBody = document.getElementById('auditLogBody');
+      tableBody.innerHTML = '<tr><td colspan="4">Loading log...</td></tr>';
+
+      try {
+        const response = await fetch('/api/orders', { headers: getAuthHeaders() });
+        const result = await response.json();
+        if (!result.success) {
+          throw new Error(result.message || 'Unable to fetch orders');
+        }
+
+        const orders = result.data || [];
+
+        if (!orders.length) {
+          tableBody.innerHTML = '<tr><td colspan="4"><div class="alert alert-info">No audit records found.</div></td></tr>';
+          return;
+        }
+
+        tableBody.innerHTML = orders.map(order => {
+          const unboxing = order.status === 'delivered' ? 'Completed' : 'Pending';
+          return `
+            <tr>
+              <td>#${order.order_number || order.id}</td>
+              <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+              <td>${order.status}</td>
+              <td>${unboxing}</td>
+            </tr>`;
+        }).join('');
+      } catch (error) {
+        console.error(error);
+        tableBody.innerHTML = `<tr><td colspan="4"><div class="alert alert-danger">${error.message}</div></td></tr>`;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await validateStoredSession();
+      initNav();
+      const user = getUserInfo();
+      if (!user || !getToken()) {
+        globalThis.location.href = 'login.html';
+        return;
+      }
+
+      // Profile Picture/Avatar Logic
+      const avatarImage = document.getElementById('avatarImage');
+      const avatarUploadInput = document.getElementById('avatarUploadInput');
+      const avatarUploadStatus = document.getElementById('avatarUploadStatus');
+
+      if (avatarImage) {
+        const storedAvatar = localStorage.getItem(`mysterypop_avatar_${user.id}`);
+        if (storedAvatar) {
+          avatarImage.src = storedAvatar;
+        } else {
+          const initials = (user.name || 'U').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+          avatarImage.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(initials)}&backgroundColor=2e4358&textColor=ffffff`;
+        }
+      }
+
+      if (avatarUploadInput) {
+        avatarUploadInput.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          if (file.size > 2 * 1024 * 1024) {
+            avatarUploadStatus.textContent = 'Error: Image must be less than 2MB';
+            avatarUploadStatus.className = 'small text-danger';
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            const base64Data = event.target.result;
+            localStorage.setItem(`mysterypop_avatar_${user.id}`, base64Data);
+            if (avatarImage) avatarImage.src = base64Data;
+            avatarUploadStatus.textContent = 'Profile picture updated!';
+            avatarUploadStatus.className = 'small text-success';
+            setTimeout(() => {
+              avatarUploadStatus.textContent = 'Click the camera to upload';
+              avatarUploadStatus.className = 'small text-muted';
+            }, 3000);
+          };
+          reader.onerror = function() {
+            avatarUploadStatus.textContent = 'Failed to read file';
+            avatarUploadStatus.className = 'small text-danger';
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      document.getElementById('profileName').textContent = user.name || 'N/A';
+      document.getElementById('profileEmail').textContent = user.email || 'N/A';
+      document.getElementById('profileRole').textContent = user.role || 'customer';
+      document.getElementById('profileCartOwner').textContent = getActiveSessionKey();
+      renderTrackingSteps();
+      loadAuditLog();
+    });
+  </script>
+</body>
+</html>

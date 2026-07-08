@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin - Orders</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" integrity="sha512-b2QcS5SsA8tZodcDtGRELiGv5SaKSk1vDHDaQRda0htPYWZ6046lr3kJ5bAAQdpV2mmA/4v0wQF9MyU6/pDIAg==" crossorigin="anonymous" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { margin-top: 0; }
+    .actions > * { margin-right: .5rem; }
+    .small-img { width:48px; height:48px; object-fit:cover; }
+  </style>
+</head>
+<body class="light-mode admin-sidebar-page">
+  <aside id="adminSidebar"></aside>
+
+  <main class="site-content">
+    <section class="page-section">
+      <div class="section-header">
+        <h1 class="section-title">Orders Management</h1>
+        <p class="section-subtitle">View and manage all orders.</p>
+      </div>
+      <div class="container">
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-sm" id="adminOrdersTable">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="common.js"></script>
+  <script>
+    ensureAdmin();
+
+    async function fetchOrders() {
+      const res = await fetch('/api/admin/orders', { headers: getAuthHeaders() });
+      const json = await res.json();
+      if (!json.success) {
+        document.getElementById('ordersBody').innerHTML = '<tr><td colspan="7">Failed to load orders</td></tr>';
+        return;
+      }
+      const orders = json.data || [];
+      document.getElementById('ordersBody').innerHTML = orders.map(order => {
+        const itemsHtml = (order.items || []).map(it => `<div class="d-flex align-items-center"><img src="${it.image||'https://via.placeholder.com/48'}" class="small-img me-2"/><div><div>${it.item_name}</div><div class="small text-muted">x${it.quantity}</div></div></div>`).join('');
+        return `
+          <tr data-order-id="${order.id}">
+            <td>#${order.id}</td>
+            <td>${order.customer_name || order.email || 'Customer'}</td>
+            <td style="min-width:220px">${itemsHtml}</td>
+            <td>₱${Number(order.total_amount||0).toFixed(2)}</td>
+            <td><select class="form-select form-select-sm order-status" style="width:160px"><option value="pending">pending</option><option value="processing">processing</option><option value="shipped">shipped</option><option value="delivered">delivered</option><option value="cancelled">cancelled</option></select></td>
+            <td><select class="form-select form-select-sm payment-status" style="width:140px"><option value="pending">pending</option><option value="paid">paid</option><option value="refunded">refunded</option></select></td>
+            <td class="actions"><button class="btn btn-sm btn-primary save-btn">Save</button></td>
+          </tr>`;
+      }).join('');
+
+      // set current values and wire events
+      document.querySelectorAll('#ordersBody tr').forEach(row => {
+        const id = row.dataset.orderId;
+        const statusSelect = row.querySelector('.order-status');
+        const paymentSelect = row.querySelector('.payment-status');
+        const saveBtn = row.querySelector('.save-btn');
+        const order = orders.find(o => String(o.id) === String(id));
+        if (order) {
+          statusSelect.value = order.status || 'pending';
+          paymentSelect.value = order.payment_status || 'pending';
+        }
+        saveBtn.addEventListener('click', async () => {
+          saveBtn.disabled = true;
+          try {
+            const res = await fetch(`/api/admin/orders/${id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+              body: JSON.stringify({ status: statusSelect.value, payment_status: paymentSelect.value })
+            });
+            const result = await res.json();
+            if (!result.success) throw new Error(result.message || 'Update failed');
+            saveBtn.textContent = 'Saved';
+            setTimeout(() => saveBtn.textContent = 'Save', 1200);
+          } catch (err) {
+            alert('Update failed: ' + (err.message || err));
+          } finally { saveBtn.disabled = false; }
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { renderAdminSidebar('orders'); fetchOrders(); });
+  </script>
+</body>
+</html>

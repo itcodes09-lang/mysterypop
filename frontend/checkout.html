@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout - Mystery Pop</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" integrity="sha512-b2QcS5SsA8tZodcDtGRELiGv5SaKSk1vDHDaQRda0htPYWZ6046lr3kJ5bAAQdpV2mmA/4v0wQF9MyU6/pDIAg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .checkout-summary, .checkout-summary * {
+      color: #000000 !important;
+    }
+    .checkout-summary {
+      border: 1px solid #dee2e6;
+      padding: 1rem;
+      border-radius: .5rem;
+      background: #fff;
+    }
+    .tracking-step.completed {
+      border-left-color: #0d6efd;
+    }
+    .tracking-step {
+      border-left: 4px solid #dee2e6;
+      padding-left: 1rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body class="light-mode public-page checkout-page">
+  <nav class="custom-navbar">
+    <div class="container-fluid">
+      <div class="navbar-content">
+        <a class="navbar-brand" href="index.html">Mystery Pop</a>
+        <div class="navbar-right">
+          <div id="navLinks" class="nav-items"></div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="site-content">
+    <section class="page-section">
+      <div class="section-header">
+        <h1 class="section-title">Checkout</h1>
+        <p class="section-subtitle">Enter shipping, contact, and payment details to place your order.</p>
+      </div>
+
+      <div class="container">
+        <div id="checkoutAlert"></div>
+        <div class="row">
+          <div class="col-lg-7">
+            <form id="checkoutForm" class="needs-validation" novalidate>
+              <div class="card mb-4">
+                <div class="card-body">
+                  <h3 class="h5 mb-3">Shipping Address</h3>
+                  <div class="row g-3">
+                    <div class="col-12">
+                      <label class="form-label" for="shippingLine1">Address line 1 <span class="text-danger">*</span></label>
+                      <input id="shippingLine1" class="form-control" placeholder="123 Vault Street" required />
+                      <div class="invalid-feedback">Address line 1 is required.</div>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label" for="shippingLine2">Address line 2</label>
+                      <input id="shippingLine2" class="form-control" placeholder="Apt, suite, unit, building" />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label" for="shippingCity">City <span class="text-danger">*</span></label>
+                      <input id="shippingCity" class="form-control" placeholder="Metropolis" required />
+                      <div class="invalid-feedback">City is required.</div>
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label" for="shippingState">State</label>
+                      <input id="shippingState" class="form-control" placeholder="State" />
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label" for="shippingZip">ZIP <span class="text-danger">*</span></label>
+                      <input id="shippingZip" class="form-control" placeholder="00000" required />
+                      <div class="invalid-feedback">ZIP is required.</div>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label" for="shippingCountry">Country <span class="text-danger">*</span></label>
+                      <input id="shippingCountry" class="form-control" placeholder="Country" required />
+                      <div class="invalid-feedback">Country is required.</div>
+                    </div>
+                    <div class="col-12 mt-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="saveAddressCheckbox" checked />
+                        <label class="form-check-label" for="saveAddressCheckbox">
+                          Save this shipping address for future orders
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card mb-4">
+                <div class="card-body">
+                  <h3 class="h5 mb-3">Contact Info</h3>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label" for="contactName">Full name</label>
+                      <input id="contactName" class="form-control" disabled />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label" for="contactEmail">Email</label>
+                      <input id="contactEmail" class="form-control" disabled />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label" for="contactPhone">Phone <span class="text-danger">*</span></label>
+                      <input id="contactPhone" class="form-control" placeholder="(555) 123-4567" required />
+                      <div class="invalid-feedback">Phone number is required.</div>
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label" for="orderNotes">Order notes</label>
+                      <textarea id="orderNotes" class="form-control" rows="3" placeholder="Special delivery instructions"></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card mb-4">
+                <div class="card-body">
+                  <h3 class="h5 mb-3">Mock Payment Details</h3>
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label" for="paymentCardName">Cardholder name</label>
+                      <input id="paymentCardName" class="form-control" placeholder="Jane Doe" required />
+                      <div class="invalid-feedback">Cardholder name is required.</div>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label" for="paymentCardNumber">Card number</label>
+                      <input id="paymentCardNumber" class="form-control" placeholder="1234 5678 9012 3456" required />
+                      <div class="invalid-feedback">Card number is required.</div>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label" for="paymentExpiry">Expiry</label>
+                      <input id="paymentExpiry" class="form-control" placeholder="MM/YY" required />
+                      <div class="invalid-feedback">Expiry is required.</div>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label" for="paymentCvc">CVC</label>
+                      <input id="paymentCvc" class="form-control" placeholder="123" required />
+                      <div class="invalid-feedback">CVC is required.</div>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label" for="paymentMethod">Payment method</label>
+                      <select id="paymentMethod" class="form-select">
+                        <option value="Credit Card">Credit Card</option>
+                        <option value="COD">Cash on Delivery (COD)</option>
+                        <option value="Vault Pay">Vault Pay</option>
+                        <option value="Mystery Token">Mystery Token</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d-grid">
+                <button type="submit" id="placeOrderBtn" class="btn btn-primary btn-lg">Place Order</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="col-lg-5">
+            <div class="checkout-summary mb-4">
+              <h3 class="h5 mb-3">Order Summary</h3>
+              <div id="summaryItems"></div>
+              <hr />
+              <div class="d-flex justify-content-between mb-2"><strong>Subtotal</strong><span id="summarySubtotal">₱0.00</span></div>
+              <div class="d-flex justify-content-between mb-0"><strong>Total</strong><strong id="summaryTotal">₱0.00</strong></div>
+              <p class="small text-muted mt-3">Your receipt will be emailed through Mailtrap with a PDF attachment when the order is placed.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="hero-footer">
+    <div class="footer-left"></div>
+    <div class="footer-center">© 2026 Mystery Pop</div>
+    <div class="footer-right">
+      <div class="footer-links"></div>
+    </div>
+  </div>
+
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="common.js"></script>
+  <script>
+    const SHIPPING_COST = 0.00;
+
+    function getCheckoutCartSummary() {
+      const cart = getSelectedCartItems();
+      const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 1), 0);
+      return { cart, subtotal, tax: 0, shipping: 0, total: subtotal };
+    }
+
+    function renderSummary() {
+      const { cart, subtotal, total } = getCheckoutCartSummary();
+      const itemsHtml = cart.length
+        ? cart.map(item => `<div class="d-flex justify-content-between"><span>${item.name} × ${item.qty}</span><strong>₱${((Number(item.price) || 0) * (Number(item.qty) || 1)).toFixed(2)}</strong></div>`).join('')
+        : '<div class="alert alert-info">No items selected for checkout.</div>';
+
+      document.getElementById('summaryItems').innerHTML = itemsHtml;
+      document.getElementById('summarySubtotal').textContent = `₱${subtotal.toFixed(2)}`;
+      document.getElementById('summaryTotal').textContent = `₱${total.toFixed(2)}`;
+    }
+
+    function showAlert(message, type = 'success') {
+      const alertEl = document.getElementById('checkoutAlert');
+      alertEl.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
+    }
+
+    function togglePaymentFields() {
+      const method = document.getElementById('paymentMethod').value;
+      const isCOD = method === 'COD';
+      const fields = ['paymentCardName', 'paymentCardNumber', 'paymentExpiry', 'paymentCvc'];
+      fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.disabled = isCOD;
+          if (isCOD) {
+            el.removeAttribute('required');
+            el.style.opacity = '0.5';
+          } else {
+            el.setAttribute('required', 'required');
+            el.style.opacity = '1';
+          }
+        }
+      });
+    }
+
+    async function placeOrder() {
+      const user = getUserInfo();
+      if (!user || !getToken()) {
+        globalThis.location.href = 'login.html';
+        return;
+      }
+
+      const { cart, tax, shipping } = getCheckoutCartSummary();
+      if (!cart.length) {
+        showAlert('Please select at least one cart item for checkout.', 'warning');
+        return;
+      }
+
+      const shippingAddress = {
+        addressLine1: document.getElementById('shippingLine1').value.trim(),
+        addressLine2: document.getElementById('shippingLine2').value.trim(),
+        city: document.getElementById('shippingCity').value.trim(),
+        state: document.getElementById('shippingState').value.trim(),
+        zip: document.getElementById('shippingZip').value.trim(),
+        country: document.getElementById('shippingCountry').value.trim()
+      };
+
+      const contactPhone = document.getElementById('contactPhone').value.trim();
+      const paymentMethod = document.getElementById('paymentMethod').value;
+      const notes = document.getElementById('orderNotes').value.trim();
+
+      showAlert('Processing your order...', 'info');
+
+      try {
+        const response = await fetch(`${API_BASE}/checkout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders()
+          },
+          body: JSON.stringify({
+            cart,
+            shippingAddress,
+            contactPhone,
+            paymentMethod,
+            notes,
+            shippingCost: shipping,
+            taxAmount: tax
+          })
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Failed to place order.');
+        }
+
+        // Save address if checked, else clear it
+        const saveAddressCheckbox = document.getElementById('saveAddressCheckbox');
+        if (saveAddressCheckbox && saveAddressCheckbox.checked) {
+          localStorage.setItem(`mysterypop_saved_address_${user.id}`, JSON.stringify(shippingAddress));
+          if (contactPhone) {
+            localStorage.setItem(`mysterypop_saved_phone_${user.id}`, contactPhone);
+          }
+        } else {
+          localStorage.removeItem(`mysterypop_saved_address_${user.id}`);
+          localStorage.removeItem(`mysterypop_saved_phone_${user.id}`);
+        }
+
+        const remainingCart = getCart().filter(item => !cart.some(checkedItem => String(checkedItem.id) === String(item.id)));
+        saveCart(remainingCart);
+        clearSelectedCheckoutItems();
+        renderSummary();
+        updateCartNavCount();
+
+        const receiptStatus = result.data?.receiptEmailSent ? 'A receipt PDF has been emailed.' : `Receipt email not sent: ${result.data?.emailError || 'Receipt email was not configured'}`;
+        const displayNum = result.data?.order?.order_number || result.data?.order?.id;
+        showAlert(`Order placed successfully! Order #${displayNum}. ${receiptStatus}`, 'success');
+
+        setTimeout(() => {
+          globalThis.location.href = 'orders.html';
+        }, 2400);
+      } catch (error) {
+        console.error(error);
+        showAlert(error.message || 'Order placement failed.', 'danger');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initNav();
+      const user = getUserInfo();
+      if (!user || !getToken()) {
+        globalThis.location.href = 'login.html';
+        return;
+      }
+
+      document.getElementById('contactName').value = user.name || '';
+      document.getElementById('contactEmail').value = user.email || '';
+      
+      // Load saved address
+      const savedAddressKey = `mysterypop_saved_address_${user.id}`;
+      const savedAddressRaw = localStorage.getItem(savedAddressKey);
+      if (savedAddressRaw) {
+        try {
+          const addr = JSON.parse(savedAddressRaw);
+          document.getElementById('shippingLine1').value = addr.addressLine1 || '';
+          document.getElementById('shippingLine2').value = addr.addressLine2 || '';
+          document.getElementById('shippingCity').value = addr.city || '';
+          document.getElementById('shippingState').value = addr.state || '';
+          document.getElementById('shippingZip').value = addr.zip || '';
+          document.getElementById('shippingCountry').value = addr.country || '';
+          
+          const phoneKey = `mysterypop_saved_phone_${user.id}`;
+          const savedPhone = localStorage.getItem(phoneKey);
+          if (savedPhone) {
+            document.getElementById('contactPhone').value = savedPhone;
+          }
+        } catch (e) {
+          console.warn('Error reading saved address', e);
+        }
+      }
+
+      renderSummary();
+
+      document.getElementById('paymentMethod').addEventListener('change', togglePaymentFields);
+      togglePaymentFields();
+
+      document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (!this.checkValidity()) {
+          this.classList.add('was-validated');
+          showAlert('Please complete all required shipping and contact details.', 'warning');
+          return;
+        }
+        this.classList.add('was-validated');
+        placeOrder();
+      });
+    });
+  </script>
+</body>
+</html>

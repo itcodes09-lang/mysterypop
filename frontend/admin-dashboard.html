@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" integrity="sha512-b2QcS5SsA8tZodcDtGRELiGv5SaKSk1vDHDaQRda0htPYWZ6046lr3kJ5bAAQdpV2mmA/4v0wQF9MyU6/pDIAg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-Zxb7hK3g1QPoNOr1bP2YV2SMkv7+IyIwFpkSdhQ7Vr/GrECa0iy4ptE6S5o8hZ9W739H3fZ4UcE2Am6YPRGMPA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { padding: 24px; margin-top: 0; }
+    .dashboard-shell {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: 2.25rem;
+      align-items: start;
+    }
+    .dashboard-sidebar {
+      position: sticky;
+      top: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.15rem;
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      border-radius: 1.85rem;
+      padding: 1.75rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(18px);
+    }
+    body.dark-mode .dashboard-sidebar {
+      background: rgba(15, 22, 34, 0.94);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    .dashboard-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent-dark);
+    }
+    .dashboard-sidebar nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.8rem 1rem;
+      border-radius: 0.9rem;
+      text-decoration: none;
+      color: var(--text-primary);
+      background: rgba(46, 67, 88, 0.06);
+      transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+    .sidebar-link:hover,
+    .sidebar-link.active {
+      background: rgba(46, 67, 88, 0.16);
+      color: var(--accent-dark);
+      transform: translateX(4px);
+    }
+    .sidebar-link.danger {
+      background: rgba(127, 18, 32, 0.92);
+      color: #ffffff;
+    }
+    .sidebar-note {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+    .dashboard-main {
+      min-width: 0;
+    }
+    .dashboard-hero {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .dashboard-hero .section-subtitle {
+      max-width: 58rem;
+    }
+    .dashboard-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+    .dashboard-card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+    }
+    .dashboard-card .card {
+      border: 0;
+      border-radius: 1.5rem;
+      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .dashboard-card:hover .card {
+      transform: translateY(-3px);
+      box-shadow: 0 20px 42px rgba(0, 0, 0, 0.12);
+    }
+    .dashboard-card-title { color: var(--text-primary) !important; }
+    .dashboard-card-subtitle { color: var(--text-secondary) !important; }
+    .dashboard-panel {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      border-radius: 1.9rem;
+      padding: 2rem 2.2rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(18px);
+    }
+    body.dark-mode .dashboard-panel {
+      background: rgba(15, 22, 34, 0.92);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    .dashboard-panel-title {
+      margin-bottom: 0.75rem;
+      color: var(--text-primary);
+    }
+    .dashboard-card .card-body {
+      padding: 1.75rem;
+    }
+    @media (max-width: 991.98px) {
+      .dashboard-shell {
+        grid-template-columns: 1fr;
+      }
+      .dashboard-sidebar {
+        position: relative;
+        top: auto;
+      }
+      .dashboard-card-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body class="light-mode admin-sidebar-page">
+  <aside id="adminSidebar"></aside>
+
+  <main class="site-content">
+    <section class="page-section">
+      <div class="container">
+        <div class="dashboard-main">
+          <div class="dashboard-hero">
+            <div class="section-header">
+              <h1 class="section-title">Admin Dashboard</h1>
+              <p class="section-subtitle">Everything has a dedicated admin page now. Use this hub as the shortcut panel instead of stacking analytics, orders, and permissions here.</p>
+            </div>
+          </div>
+
+          <div class="dashboard-panel mb-4">
+            <h5 class="dashboard-panel-title">Quick Links</h5>
+            <div class="dashboard-card-grid">
+              <a href="admin-charts.html" class="dashboard-card">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <h6 class="card-title dashboard-card-title">Charts</h6>
+                    <div class="small dashboard-card-subtitle">Revenue and analytics</div>
+                  </div>
+                </div>
+              </a>
+              <a href="products-admin.html" class="dashboard-card">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <h6 class="card-title dashboard-card-title">Products</h6>
+                    <div class="small dashboard-card-subtitle">Inventory and items</div>
+                  </div>
+                </div>
+              </a>
+              <a href="admin-orders.html" class="dashboard-card">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <h6 class="card-title dashboard-card-title">Orders</h6>
+                    <div class="small dashboard-card-subtitle">Fulfillment and status</div>
+                  </div>
+                </div>
+              </a>
+              <a href="users.html" class="dashboard-card">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <h6 class="card-title dashboard-card-title">Users</h6>
+                    <div class="small dashboard-card-subtitle">Permissions and access</div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <div class="dashboard-panel">
+            <h5 class="dashboard-panel-title">How To Use This Page</h5>
+            <p class="mb-0">Open a section from the sidebar and stay in that area. Charts live in Admin Charts, product inventory lives in Products, orders live in Orders, and access control lives in Users.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="hero-footer">
+    <div class="footer-left">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+        <div class="toggle-circle"><i class="fas fa-sun"></i></div>
+      </button>
+    </div>
+    <div class="footer-center">© 2026 Kim Ryan B. Macaroncio (BSIT-NS-2A-T). All rights reserved.</div>
+    <div class="footer-right">
+      <div class="footer-links">
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="common.js"></script>
+  <script>
+    ensureAdmin();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadThemePreference();
+      renderAdminSidebar('dashboard');
+    });
+  </script>
+</body>
+</html>

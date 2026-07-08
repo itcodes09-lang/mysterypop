@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cart - Mystery Pop</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" integrity="sha512-b2QcS5SsA8tZodcDtGRELiGv5SaKSk1vDHDaQRda0htPYWZ6046lr3kJ5bAAQdpV2mmA/4v0wQF9MyU6/pDIAg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="light-mode public-page cart-page">
+  <nav class="custom-navbar">
+    <div class="container-fluid">
+      <div class="navbar-content">
+        <a class="navbar-brand" href="index.html">Mystery Pop</a>
+        <div class="navbar-right">
+          <div id="navLinks" class="nav-items"></div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="site-content">
+    <section class="page-section">
+      <div class="section-header">
+        <h1 class="section-title">Your Cart</h1>
+        <p class="section-subtitle">Review items before checkout.</p>
+      </div>
+      <div class="container">
+        <div id="cartEmpty" class="alert alert-info" style="display:none;">Your cart is empty.</div>
+        <div id="cartArea">
+          <table class="table" id="cartTable">
+            <thead>
+              <tr>
+                <th class="text-center"><label class="visually-hidden" for="selectAllCheckbox">Select all items</label><input id="selectAllCheckbox" type="checkbox" title="Select all" /></th>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Subtotal</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <label><input type="checkbox" id="autoTotal" checked /> Automatic total update</label>
+            </div>
+            <div>
+              <strong>Total: ₱<span id="cartTotal">0.00</span></strong>
+              <button class="btn btn-primary ms-3" id="checkoutBtn">Checkout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="hero-footer">
+    <div class="footer-left">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme"><div class="toggle-circle"></div></button>
+    </div>
+    <div class="footer-center">© 2026 Kim Ryan B. Macaroncio (BSIT-NS-2A-T). All rights reserved.</div>
+    <div class="footer-right">
+      <div class="footer-links">
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="common.js"></script>
+  <script>
+
+
+    function renderCart() {
+      const cart = getCart();
+      const selectedIds = getCartSelection();
+      const tbody = document.querySelector('#cartTable tbody');
+      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+      tbody.innerHTML = '';
+      if (!cart.length) {
+        document.getElementById('cartEmpty').style.display = 'block';
+        document.getElementById('cartArea').style.display = 'none';
+        document.getElementById('cartTotal').textContent = '0.00';
+        if (selectAllCheckbox) selectAllCheckbox.checked = false;
+        return;
+      }
+      document.getElementById('cartEmpty').style.display = 'none';
+      document.getElementById('cartArea').style.display = 'block';
+
+      const allSelected = cart.length && cart.every(item => selectedIds.includes(String(item.id)));
+      if (selectAllCheckbox) selectAllCheckbox.checked = Boolean(allSelected);
+
+      cart.forEach(item => {
+        const selected = selectedIds.includes(String(item.id));
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="text-center"><input type="checkbox" class="cart-item-select" data-id="${item.id}" ${selected ? 'checked' : ''} /></td>
+          <td style="width:80px"><img src="${item.image || 'https://via.placeholder.com/80'}" alt="" class="img-fluid" /></td>
+          <td>${item.name}</td>
+          <td>₱${(item.price||0).toFixed(2)}</td>
+          <td>
+            <div class="input-group input-group-sm" style="max-width:120px;">
+              <button class="btn btn-outline-secondary btn-decrease" data-id="${item.id}">-</button>
+              <input type="text" class="form-control qty-input" data-id="${item.id}" value="${item.qty}" />
+              <button class="btn btn-outline-secondary btn-increase" data-id="${item.id}">+</button>
+            </div>
+          </td>
+          <td>₱<span class="item-subtotal">${((item.price||0)*item.qty).toFixed(2)}</span></td>
+          <td><button class="btn btn-sm btn-danger btn-delete" data-id="${item.id}">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      updateTotal();
+    }
+
+    function updateTotal() {
+      const total = getSelectedCartItems().reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 1), 0);
+      const totalEl = document.getElementById('cartTotal');
+      if (totalEl) totalEl.textContent = total.toFixed(2);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadThemePreference();
+      initNav();
+      renderCart();
+      updateCartNavCount();
+
+      document.getElementById('cartTable').addEventListener('click', function(e){
+        if (e.target.classList.contains('cart-item-select')) {
+          const id = e.target.dataset.id;
+          toggleCartItemSelection(id, e.target.checked);
+          renderCart();
+          return;
+        }
+        if (e.target.classList.contains('btn-increase')) {
+          const id = e.target.dataset.id;
+          const cart = getCart();
+          const it = cart.find((item) => String(item.id) === String(id));
+          if (!it) return;
+          updateCartQuantity(id, (it.qty || 1) + 1);
+          renderCart();
+          updateCartNavCount();
+        }
+        if (e.target.classList.contains('btn-decrease')) {
+          const id = e.target.dataset.id;
+          const cart = getCart();
+          const it = cart.find((item) => String(item.id) === String(id));
+          if (!it) return;
+          updateCartQuantity(id, Math.max(1, (it.qty || 1) - 1));
+          renderCart();
+          updateCartNavCount();
+        }
+        if (e.target.classList.contains('btn-delete')) {
+          const id = e.target.dataset.id;
+          removeFromCart(id); renderCart(); updateCartNavCount();
+        }
+      });
+
+      document.querySelector('#cartTable').addEventListener('input', function(e){
+        if (e.target.classList.contains('qty-input')) {
+          const id = e.target.dataset.id;
+          const val = Number.parseInt(e.target.value || '1', 10) || 1;
+          updateCartQuantity(id, val);
+          if (document.getElementById('autoTotal').checked) updateTotal();
+          updateCartNavCount();
+        }
+      });
+
+      const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+      if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+          const checked = this.checked;
+          const cart = getCart();
+          cart.forEach(item => toggleCartItemSelection(item.id, checked));
+          renderCart();
+        });
+      }
+
+      document.getElementById('autoTotal').addEventListener('change', updateTotal);
+
+      document.getElementById('checkoutBtn').addEventListener('click', function(){
+        if (!requireLoginForCheckout()) return;
+
+        const selected = getSelectedCartItems();
+        if (!selected.length) {
+          showNoticeModal('Items Required', 'Please select at least one item from your cart to proceed with checkout.');
+          return;
+        }
+
+        globalThis.location.href = 'checkout.html';
+      });
+    });
+  </script>
+</body>
+</html>

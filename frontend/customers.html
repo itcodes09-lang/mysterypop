@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Admin</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" integrity="sha512-b2QcS5SsA8tZodcDtGRELiGv5SaKSk1vDHDaQRda0htPYWZ6046lr3kJ5bAAQdpV2mmA/4v0wQF9MyU6/pDIAg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-Zxb7hK3g1QPoNOr1bP2YV2SMkv7+IyIwFpkSdhQ7Vr/GrECa0iy4ptE6S5o8hZ9W739H3fZ4UcE2Am6YPRGMPA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="vendor/datatables/jquery.dataTables.min.css" />
+  <style>
+    body { padding: 20px; margin-top: 0; }
+    .card { margin-bottom: 20px; }
+    .table img { max-width: 80px; height: auto; }
+  </style>
+</head>
+<body class="light-mode admin-sidebar-page">
+  <aside id="adminSidebar"></aside>
+
+  <main class="site-content">
+    <section class="page-section">
+      <div class="section-header">
+        <h1 class="section-title">Customer Management</h1>
+        <p class="section-subtitle">Add and manage customer records using rich inline forms and a polished data table experience.</p>
+      </div>
+      <div class="container">
+        <div class="card">
+          <div class="card-body">
+            <form id="customerForm" enctype="multipart/form-data">
+          <input type="hidden" id="customerId" />
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="fname">First Name</label>
+              <input type="text" id="fname" name="fname" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="lname">Last Name</label>
+              <input type="text" id="lname" name="lname" class="form-control" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="phone">Phone</label>
+              <input type="text" id="phone" name="phone" class="form-control" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="zipcode">Zip Code</label>
+              <input type="text" id="zipcode" name="zipcode" class="form-control" />
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="address">Address</label>
+              <input type="text" id="address" name="address" class="form-control" />
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="image">Customer Image</label>
+              <input type="file" id="image" name="image" class="form-control" accept="image/*" />
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary">Save Customer</button>
+              <button type="button" id="resetBtn" class="btn btn-secondary ms-2">Clear</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <table id="customersTable" class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Address</th>
+              <th>Zip</th>
+              <th>Image</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <div class="hero-footer">
+    <div class="footer-left">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+        <div class="toggle-circle"><i class="fas fa-sun"></i></div>
+      </button>
+    </div>
+    <div class="footer-center">© 2026 Kim Ryan B. Macaroncio (BSIT-NS-2A-T). All rights reserved.</div>
+    <div class="footer-right">
+      <div class="footer-links">
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+  <script src="vendor/datatables/jquery.dataTables.min.js"></script>
+  <script src="vendor/datatables/dataTables.bootstrap5.min.js"></script>
+  <script src="common.js"></script>
+  <script>
+    ensureAdmin();
+
+    $.validator.addMethod('imageFile', function(value, element) {
+      if (!element.files || !element.files.length) return true;
+      const file = element.files[0];
+      return /^image\//i.test(file.type);
+    }, 'Please upload a valid image file.');
+    
+    // Toggle theme function
+    function toggleTheme() {
+      const body = document.body;
+      const toggle = document.getElementById('themeToggle');
+      
+      body.classList.toggle('dark-mode');
+      body.classList.toggle('light-mode');
+      toggle.classList.toggle('dark-active');
+      
+      const isDarkMode = body.classList.contains('dark-mode');
+      localStorage.setItem('theme-preference', isDarkMode ? 'dark' : 'light');
+    }
+
+    // Load saved theme preference
+    function loadThemePreference() {
+      const saved = localStorage.getItem('theme-preference');
+      const body = document.body;
+      const toggle = document.getElementById('themeToggle');
+      
+      if (saved === 'dark') {
+        body.classList.remove('light-mode');
+        body.classList.add('dark-mode');
+        toggle.classList.add('dark-active');
+      }
+    }
+
+    const apiUrl = `${API_BASE}/customers`;
+    let table;
+
+    function resetForm() {
+      $('#customerId').val('');
+      $('#customerForm')[0].reset();
+    }
+
+    function showToast(message) {
+      alert(message);
+    }
+
+    function loadCustomers() {
+      $.ajax({
+        url: apiUrl,
+        method: 'GET',
+        headers: getAuthHeaders(),
+        success: function(result) {
+          if (!result.success) {
+            return showToast('Could not load customers');
+          }
+
+        const rows = result.data.map(customer => {
+          const fullName = `${customer.fname || ''} ${customer.lname || ''}`.trim();
+          const imageHtml = customer.image ? `<img src="${customer.image}" class="img-fluid" style="max-height: 80px; object-fit: cover;" />` : '-';
+          return [`${customer.id}`, fullName, customer.phone || '-', customer.address || '-', customer.zipcode || '-', imageHtml,
+            `<button class="btn btn-sm btn-warning me-1" data-id="${customer.id}" data-action="edit">Edit</button>` +
+            `<button class="btn btn-sm btn-danger" data-id="${customer.id}" data-action="delete">Delete</button>`
+          ];
+        });
+
+        table.clear();
+        table.rows.add(rows);
+        table.draw();
+      },
+      error: function() {
+        showToast('Unable to reach backend');
+      }
+    });
+    }
+
+    function createCustomer(formData) {
+      $.ajax({
+        url: apiUrl,
+        method: 'POST',
+        headers: getAuthHeaders(),
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(result) {
+          if (result.success) {
+            showToast('Customer saved');
+            resetForm();
+            loadCustomers();
+          } else {
+            showToast(result.message || 'Save failed');
+          }
+        },
+        error: function(xhr) {
+          showToast(xhr.responseJSON?.message || 'Save failed');
+        }
+      });
+    }
+
+    function updateCustomer(id, formData) {
+      $.ajax({
+        url: `${apiUrl}/${id}`,
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(result) {
+          if (result.success) {
+            showToast('Customer updated');
+            resetForm();
+            loadCustomers();
+          } else {
+            showToast(result.message || 'Update failed');
+          }
+        },
+        error: function(xhr) {
+          showToast(xhr.responseJSON?.message || 'Update failed');
+        }
+      });
+    }
+
+    $(document).ready(function() {
+      loadThemePreference();
+      renderAdminSidebar('customers');
+      table = $('#customersTable').DataTable({
+        columns: [
+          { title: 'ID' },
+          { title: 'Name' },
+          { title: 'Phone' },
+          { title: 'Address' },
+          { title: 'Zip' },
+          { title: 'Image', orderable: false, searchable: false },
+          { title: 'Actions', orderable: false, searchable: false }
+        ]
+      });
+
+      $('#customerForm').validate({
+        errorElement: 'div',
+        errorClass: 'invalid-feedback d-block',
+        highlight: function(element) {
+          $(element).addClass('is-invalid');
+        },
+        unhighlight: function(element) {
+          $(element).removeClass('is-invalid');
+        },
+        rules: {
+          fname: { required: true, minlength: 2 },
+          lname: { minlength: 2 },
+          phone: { digits: true, minlength: 7 },
+          zipcode: { digits: true, minlength: 4 },
+          address: { minlength: 5 },
+          image: { imageFile: true }
+        },
+        messages: {
+          fname: 'First name is required.',
+          phone: 'Phone number should contain digits only.',
+          zipcode: 'Zip code should contain digits only.'
+        }
+      });
+
+      loadCustomers();
+
+      $('#customerForm').on('submit', function(e) {
+        e.preventDefault();
+        if (!$(this).valid()) return;
+        const id = $('#customerId').val();
+        const formData = new FormData();
+        formData.append('fname', $('#fname').val());
+        formData.append('lname', $('#lname').val());
+        formData.append('address', $('#address').val());
+        formData.append('zipcode', $('#zipcode').val());
+        formData.append('phone', $('#phone').val());
+        const imageFile = $('#image')[0].files[0];
+        if (imageFile) formData.append('image', imageFile);
+
+        if (id) {
+          updateCustomer(id, formData);
+        } else {
+          createCustomer(formData);
+        }
+      });
+
+      $('#resetBtn').on('click', resetForm);
+
+      $('#customersTable tbody').on('click', 'button', function() {
+        const id = $(this).data('id');
+        const action = $(this).data('action');
+
+        if (action === 'edit') {
+          $.ajax({
+            url: `${apiUrl}/${id}`,
+            method: 'GET',
+            headers: getAuthHeaders(),
+            success: function(result) {
+              if (!result.success) {
+                return showToast('Customer not found');
+              }
+              const customer = result.data;
+              $('#customerId').val(customer.id);
+              $('#fname').val(customer.fname);
+              $('#lname').val(customer.lname);
+              $('#address').val(customer.address);
+              $('#zipcode').val(customer.zipcode);
+              $('#phone').val(customer.phone);
+            },
+            error: function() {
+              showToast('Unable to load customer');
+            }
+          });
+        }
+
+        if (action === 'delete') {
+          if (!confirm('Delete this customer?')) return;
+          $.ajax({
+            url: `${apiUrl}/${id}`,
+            method: 'DELETE',
+            headers: getAuthHeaders(),
+            success: function(result) {
+              if (result.success) {
+                showToast('Customer deleted');
+                loadCustomers();
+              } else {
+                showToast(result.message || 'Delete failed');
+              }
+            },
+            error: function(xhr) {
+              showToast(xhr.responseJSON?.message || 'Delete failed');
+            }
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

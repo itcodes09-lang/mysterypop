@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Charts</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" integrity="sha512-b2QcS5SsA8tZodcDtGRELiGv5SaKSk1vDHDaQRda0htPYWZ6046lr3kJ5bAAQdpV2mmA/4v0wQF9MyU6/pDIAg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-Zxb7hK3g1QPoNOr1bP2YV2SMkv7+IyIwFpkSdhQ7Vr/GrECa0iy4ptE6S5o8hZ9W739H3fZ4UcE2Am6YPRGMPA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { padding: 20px; margin-top: 0; }
+    .chart-card { min-height: 320px; }
+    .chart-card .card-body {
+      display: flex;
+      flex-direction: column;
+    }
+    .chart-frame {
+      position: relative;
+      height: 280px;
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 280px;
+    }
+    .chart-frame canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    .admin-nav-links a { min-width: 110px; }
+  </style>
+</head>
+<body class="light-mode admin-sidebar-page">
+  <aside id="adminSidebar"></aside>
+
+  <main class="site-content">
+    <section class="page-section">
+      <div class="section-header">
+        <h1 class="section-title">Admin Charts</h1>
+        <p class="section-subtitle">Visualize daily sales and monthly revenue statistics in one place.</p>
+      </div>
+        <div class="container">
+        <div class="row g-4">
+          <div class="col-lg-6">
+            <div class="card chart-card shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title">Sales by Day</h5>
+                <div class="chart-frame">
+                  <canvas id="salesChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card chart-card shadow-sm">
+              <div class="card-body">
+                <h5 class="card-title">Monthly Revenue</h5>
+                <div class="chart-frame">
+                  <canvas id="monthlyRevenueChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mt-2">
+          <div class="col-lg-12">
+            <div class="card chart-card shadow-sm">
+              <div class="card-body text-center">
+                <h5 class="card-title">Revenue Share by Theme</h5>
+                <div class="chart-frame mx-auto" style="max-width: 480px; height: 350px; min-height: 350px;">
+                  <canvas id="themeRevenueChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="hero-footer">
+    <div class="footer-left">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+        <div class="toggle-circle"><i class="fas fa-sun"></i></div>
+      </button>
+    </div>
+    <div class="footer-center">© 2026 Kim Ryan B. Macaroncio (BSIT-NS-2A-T). All rights reserved.</div>
+    <div class="footer-right">
+      <div class="footer-links">
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="common.js"></script>
+  <script>
+    ensureAdmin();
+
+    function createChart(canvasId, type, labels, data, backgroundColor, borderColor, datasetLabel = 'Value') {
+      const ctx = document.getElementById(canvasId)?.getContext('2d');
+      if (!ctx) return null;
+      return new Chart(ctx, {
+        type,
+        data: {
+          labels,
+          datasets: [{
+            label: datasetLabel,
+            data,
+            backgroundColor,
+            borderColor,
+            borderWidth: 1,
+            fill: type === 'line'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          },
+          scales: type === 'doughnut' || type === 'pie' ? {} : { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    async function initCharts() {
+      const statsRes = await fetch(`${API_BASE.replace('/api', '')}/api/admin/stats`, { headers: getAuthHeaders() });
+      const statsResult = await statsRes.json();
+      if (!statsResult.success) {
+        document.querySelector('.section-subtitle').textContent = 'Unable to load analytics data.';
+        return;
+      }
+
+      const stats = statsResult.data;
+      const salesLabels = (stats.salesByDay || []).map((entry) => entry.label);
+      const salesData = (stats.salesByDay || []).map((entry) => Number(entry.value || 0));
+
+      const monthlyRevenueLabels = (stats.monthlyRevenue || []).map((entry) => entry.label);
+      const monthlyRevenueData = (stats.monthlyRevenue || []).map((entry) => Number(entry.value || 0));
+
+      const themeLabels = (stats.revenueByTheme || []).map((entry) => entry.label);
+      const themeData = (stats.revenueByTheme || []).map((entry) => Number(entry.value || 0));
+
+      const colors = [
+        'rgba(255, 99, 132, 0.6)',
+        'rgba(54, 162, 235, 0.6)',
+        'rgba(255, 206, 86, 0.6)',
+        'rgba(75, 192, 192, 0.6)',
+        'rgba(153, 102, 255, 0.6)',
+        'rgba(255, 159, 64, 0.6)',
+        'rgba(201, 203, 207, 0.6)'
+      ];
+      const borders = [
+        'rgba(255, 99, 132, 1)',
+        'rgba(54, 162, 235, 1)',
+        'rgba(255, 206, 86, 1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(153, 102, 255, 1)',
+        'rgba(255, 159, 64, 1)',
+        'rgba(201, 203, 207, 1)'
+      ];
+
+      createChart('salesChart', 'bar', salesLabels, salesData, 'rgba(54, 162, 235, 0.6)', 'rgba(54, 162, 235, 1)', 'Daily Sales (₱)');
+      createChart('monthlyRevenueChart', 'line', monthlyRevenueLabels, monthlyRevenueData, 'rgba(153, 102, 255, 0.3)', 'rgba(153, 102, 255, 1)', 'Monthly Revenue (₱)');
+      createChart('themeRevenueChart', 'pie', themeLabels, themeData, colors, borders, 'Revenue Share (₱)');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderAdminSidebar('charts');
+      initCharts();
+    });
+  </script>
+</body>
+</html>

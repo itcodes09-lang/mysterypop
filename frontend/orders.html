@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Orders - Mystery Pop</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .order-card { margin-bottom: 1rem; }
+    .order-items td { vertical-align: middle; }
+  </style>
+</head>
+<body class="light-mode">
+  <nav class="custom-navbar">
+    <div class="container-fluid">
+      <div class="navbar-content">
+        <a class="navbar-brand" href="index.html">Mystery Pop</a>
+        <div class="navbar-right">
+          <div id="navLinks" class="nav-items"></div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="site-content">
+    <section class="page-section">
+      <div class="section-header">
+        <h1 class="section-title">Your Orders</h1>
+        <p class="section-subtitle">View past purchases and order details.</p>
+      </div>
+      <div class="container">
+        <div id="ordersContainer">Loading orders...</div>
+      </div>
+    </section>
+  </main>
+
+  <div class="hero-footer">
+    <div class="footer-left"></div>
+    <div class="footer-center">© 2026 Mystery Pop</div>
+    <div class="footer-right">
+      <div class="footer-links"></div>
+    </div>
+  </div>
+
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="common.js"></script>
+  <script>
+    async function loadOrders() {
+      if (!getToken()) {
+        window.location.href = 'login.html';
+        return;
+      }
+      const container = document.getElementById('ordersContainer');
+      container.textContent = 'Loading orders...';
+      try {
+          const user = getUserInfo();
+          const endpoint = (user && user.role === 'admin') ? '/api/admin/orders' : '/api/orders';
+          const res = await fetch(endpoint, { headers: getAuthHeaders() });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.message || 'Failed to load orders');
+          const orders = result.data || [];
+        if (!orders.length) {
+          container.innerHTML = '<div class="alert alert-info">No orders found.</div>';
+          return;
+        }
+
+        container.innerHTML = orders.map(order => {
+          const itemsHtml = (order.items || []).map(it => `
+            <tr>
+              <td style="width:64px"><img src="${(it.image||'https://via.placeholder.com/64')}" class="img-fluid" /></td>
+              <td>${it.item_name}</td>
+              <td>${it.quantity}</td>
+              <td>₱${Number(it.price).toFixed(2)}</td>
+            </tr>`).join('');
+
+          return `
+            <div class="card order-card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div><strong>Order #${order.order_number || order.id}</strong> — <small class="text-muted">${new Date(order.createdAt).toLocaleString()}</small></div>
+                  <div><strong>₱${Number(order.total_amount).toFixed(2)}</strong></div>
+                </div>
+                <div class="mb-2"><small>Status: <span class="badge bg-secondary">${order.status}</span> &nbsp; Payment: <span class="badge bg-info text-dark">${order.payment_status}</span></small></div>
+                <div class="table-responsive">
+                  <table class="table order-items mb-0">
+                    <thead><tr><th></th><th>Item</th><th>Qty</th><th>Price</th></tr></thead>
+                    <tbody>
+                      ${itemsHtml}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>`;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = `<div class="alert alert-danger">Error loading orders: ${err.message}</div>`;
+        console.error(err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initNav();
+      loadOrders();
+    });
+  </script>
+</body>
+</html>

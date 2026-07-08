@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Products</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" integrity="sha512-b2QcS5SsA8tZodcDtGRELiGv5SaKSk1vDHDaQRda0htPYWZ6046lr3kJ5bAAQdpV2mmA/4v0wQF9MyU6/pDIAg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .product-card { transition: transform 0.2s; }
+    .product-card:hover { transform: translateY(-5px); }
+    .product-images { position: relative; }
+    .product-images img { max-height: 200px; object-fit: cover; display:block; }
+    .product-detail-image { max-height: 320px; width: 100%; object-fit: cover; border-radius: 10px; }
+    .filter-panel { border-radius: 1.5rem; padding: 1.25rem; background: rgba(255,255,255,0.92); box-shadow: 0 16px 40px rgba(0,0,0,0.08); }
+    .image-actions { position: absolute; top: 8px; right: 8px; display:flex; gap:6px; z-index: 5; }
+    .image-actions .btn { opacity: 0.95; }
+    #productsContainer { min-height: 200px; }
+    .debug-item { background: #f8f9fa; border: 1px solid #dee2e6; padding:12px; margin-bottom:12px; color: #212529; }
+  </style>
+</head>
+<body class="light-mode public-page catalog-page">
+  <!-- NAVBAR -->
+  <nav class="custom-navbar">
+    <div class="container-fluid">
+      <div class="navbar-content">
+        <a class="navbar-brand" href="index.html">Mystery Pop</a>
+        <div class="navbar-right">
+          <div id="navLinks" class="nav-items"></div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  
+  <main class="site-content">
+    <section class="page-section">
+      <div class="section-header">
+        <h1 class="section-title">Browse Mystery Products</h1>
+        <p class="section-subtitle">Explore limited edition drops, rare blind boxes, and collector favorites in a modern storefront experience.</p>
+      </div>
+      <div class="container">
+        <div class="row mb-4">
+          <div class="col">
+            <div class="alert alert-secondary">Browse the latest mystery drops, filter by collection, and add favorites to your cart.</div>
+            <div id="productsStatus" class="mb-2 small text-muted">Products status: idle</div>
+          </div>
+        </div>
+        <div class="row g-4">
+          <div class="col-lg-3">
+            <div class="filter-panel shadow-sm">
+              <h5 class="mb-3">Filters</h5>
+              <div class="mb-3">
+                <label for="brandFilter" class="form-label">Brand</label>
+                <select id="brandFilter" class="form-select form-select-sm">
+                  <option value="">All Brands</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="themeFilter" class="form-label">Theme</label>
+                <select id="themeFilter" class="form-select form-select-sm">
+                  <option value="">All Themes</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="priceFilter" class="form-label">Price</label>
+                <select id="priceFilter" class="form-select form-select-sm">
+                  <option value="">Any Price</option>
+                  <option value="under1500">Under ₱1500</option>
+                  <option value="1000to2500">₱1000 - ₱2500</option>
+                  <option value="over2500">Over ₱2500</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="stockFilter" class="form-label">Stock</label>
+                <select id="stockFilter" class="form-select form-select-sm">
+                  <option value="">All Stock</option>
+                  <option value="inStock">In Stock</option>
+                  <option value="outOfStock">Out of Stock</option>
+                </select>
+              </div>
+              <button id="clearFiltersBtn" class="btn btn-outline-secondary btn-sm w-100">Clear Filters</button>
+            </div>
+          </div>
+          <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <div class="small text-muted" id="resultsCount">0 items</div>
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <div class="input-group input-group-sm" style="max-width:320px;">
+                  <label class="visually-hidden" for="catalogSearch">Search products</label>
+                  <input id="catalogSearch" type="search" class="form-control" placeholder="Search products..." />
+                  <button id="catalogSearchClear" class="btn btn-outline-secondary" type="button">Clear</button>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <label for="sortSelect" class="form-label mb-0">Sort by</label>
+                  <select id="sortSelect" class="form-select form-select-sm" style="width:auto;">
+                    <option value="featured">Featured</option>
+                    <option value="priceAsc">Price: Low to High</option>
+                    <option value="priceDesc">Price: High to Low</option>
+                    <option value="newest">Newest</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="row" id="productsContainer">
+              <!-- Products will be loaded here dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div class="hero-footer">
+    <div class="footer-left">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+        <div class="toggle-circle"><i class="fas fa-sun"></i></div>
+      </button>
+    </div>
+    <div class="footer-center">© 2026 Kim Ryan B. Macaroncio (BSIT-NS-2A-T). All rights reserved.</div>
+    <div class="footer-right">
+      <div class="footer-links">
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </div>
+  
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="common.js"></script>
+  <script>
+    const apiUrl = `${API_BASE}/items`;
+
+
+
+    let allProducts = [];
+
+    function getProductImage(product) {
+      if (!product) return 'https://via.placeholder.com/200';
+      let images = product.images;
+      if (typeof images === 'string') {
+        try {
+          images = JSON.parse(images);
+        } catch (e) {
+          images = [];
+        }
+      }
+      if (!Array.isArray(images)) {
+        images = [];
+      }
+      const imageValue = images[0] || product.image || '';
+      return imageValue.startsWith('/') ? globalThis.location.origin + imageValue : imageValue || 'https://via.placeholder.com/200';
+    }
+
+    function getProductTheme(product) {
+      return product.theme || product.category || product.series || 'General';
+    }
+
+    function getProductBrand(product) {
+      return product.brand || product.manufacturer || 'Mystery Pop';
+    }
+
+    function applyFiltersAndSort(products) {
+      const brand = document.getElementById('brandFilter')?.value || '';
+      const theme = document.getElementById('themeFilter')?.value || '';
+      const price = document.getElementById('priceFilter')?.value || '';
+      const stock = document.getElementById('stockFilter')?.value || '';
+      const searchQuery = document.getElementById('catalogSearch')?.value.trim().toLowerCase() || '';
+      const sort = document.getElementById('sortSelect')?.value || 'featured';
+
+      const filtered = products.filter((product) => {
+        const matchesBrand = !brand || getProductBrand(product).toLowerCase() === brand.toLowerCase();
+        const matchesTheme = !theme || getProductTheme(product).toLowerCase() === theme.toLowerCase();
+        const matchesPrice = (() => {
+          const priceValue = Number(product.price) || 0;
+          if (price === 'under1500') return priceValue < 1500;
+          if (price === '1000to2500') return priceValue >= 1000 && priceValue <= 2500;
+          if (price === 'over2500') return priceValue > 2500;
+          return true;
+        })();
+        const matchesStock = !stock || (stock === 'inStock' ? Number(product.stock) > 0 : Number(product.stock) <= 0);
+        const searchText = [product.name, product.description, getProductBrand(product), getProductTheme(product)].join(' ').toLowerCase();
+        const matchesSearch = !searchQuery || searchText.includes(searchQuery);
+        return matchesBrand && matchesTheme && matchesPrice && matchesStock && matchesSearch;
+      });
+
+      const sorted = [...filtered].sort((a, b) => {
+        if (sort === 'priceAsc') return Number(a.price) - Number(b.price);
+        if (sort === 'priceDesc') return Number(b.price) - Number(a.price);
+        if (sort === 'newest') return Number(b.id || 0) - Number(a.id || 0);
+        return 0;
+      });
+
+      return sorted;
+    }
+
+    function renderProducts(products) {
+      const container = document.getElementById('productsContainer');
+      const statusEl = document.getElementById('productsStatus');
+      const resultsEl = document.getElementById('resultsCount');
+      if (!container) return;
+      container.innerHTML = '';
+      const visibleProducts = applyFiltersAndSort(products);
+      if (!visibleProducts.length) {
+        if (statusEl) statusEl.textContent = 'Products status: no items found';
+        if (resultsEl) resultsEl.textContent = '0 items';
+        container.innerHTML = '<div class="debug-item">No products found for the selected filters.</div>';
+        return;
+      }
+      if (resultsEl) resultsEl.textContent = `${visibleProducts.length} items`;
+      visibleProducts.forEach(product => {
+        const src = getProductImage(product);
+        const imageHtml = `<img src="${src}" class="w-100 product-thumb" alt="${product.name}" style="cursor:pointer;" />`;
+        const col = document.createElement('div');
+        col.className = 'col-md-6 col-lg-4 mb-4';
+        col.innerHTML = `
+          <div class="card product-card h-100">
+            <div class="product-images">${imageHtml}</div>
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">${product.name}</h5>
+              <p class="small text-muted mb-2">${getProductBrand(product)} • ${getProductTheme(product)}</p>
+              <p class="card-text flex-grow-1">${product.description || 'No description'}</p>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="h5 mb-0">₱${Number(product.price).toFixed(2)}</span>
+                <span class="badge bg-${product.stock > 0 ? 'success' : 'danger'}">${product.stock > 0 ? `Stock: ${product.stock}` : 'Out of Stock'}</span>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary btn-sm details-btn">View Details</button>
+                <button class="btn btn-primary btn-sm add-cart-btn" ${product.stock <= 0 ? 'disabled' : ''}>Add to Cart</button>
+                <button class="btn btn-success btn-sm buy-now-btn" ${product.stock <= 0 ? 'disabled' : ''}>Buy Now</button>
+              </div>
+            </div>
+          </div>`;
+        const jsonProduct = JSON.stringify(product);
+        const detailBtn = col.querySelector('.details-btn');
+        const addBtn = col.querySelector('.add-cart-btn');
+        const buyBtn = col.querySelector('.buy-now-btn');
+        if (detailBtn) {
+          detailBtn.dataset.product = jsonProduct;
+          detailBtn.addEventListener('click', () => openProductDetails(product));
+        }
+        // Make image clickable to open details
+        const imgEl = col.querySelector('.product-thumb');
+        if (imgEl) {
+          imgEl.addEventListener('click', () => openProductDetails(product));
+        }
+        if (addBtn) {
+          addBtn.dataset.product = jsonProduct;
+          addBtn.addEventListener('click', () => {
+            addToCart(product);
+            updateCartNavCount();
+            showCartToast(product.name, getProductImage(product));
+          });
+        }
+        if (buyBtn) {
+          buyBtn.dataset.product = jsonProduct;
+          buyBtn.addEventListener('click', () => {
+            if (!requireLoginForCheckout()) return;
+            addToCart(product);
+            updateCartNavCount();
+            globalThis.location.href = 'cart.html';
+          });
+        }
+        container.appendChild(col);
+      });
+      if (statusEl) statusEl.textContent = `Products status: rendered ${products.length} items`;
+      updateCartNavCount();
+    }
+
+    function getProductFromElement(element) {
+      // Prefer dataset parsing; dataset.product should contain a JSON string
+      const data = element?.dataset?.product;
+      if (!data) return null;
+      try {
+        return JSON.parse(data);
+      } catch (err) {
+        console.error('Invalid product JSON in dataset.product', err, data);
+        return null;
+      }
+    }
+
+    function updateCartNavCount() {
+      const badge = document.getElementById('navCartCount');
+      if (!badge) return;
+      const cart = getCart();
+      const totalQty = cart.reduce((sum, item) => sum + (item.qty || 0), 0);
+      badge.textContent = totalQty;
+      badge.style.display = totalQty ? 'inline-block' : 'none';
+    }
+
+    function openProductDetails(product) {
+      const modal = document.getElementById('productDetailsModal');
+      const title = document.getElementById('detailsTitle');
+      const body = document.getElementById('detailsBody');
+      const addCartBtn = document.getElementById('detailsAddCart');
+      const buyBtn = document.getElementById('detailsBuy');
+      if (!modal || !title || !body || !addCartBtn || !buyBtn) return;
+      // If the product has an id, fetch the latest data from backend to ensure stock/description are up-to-date
+      (async () => {
+        let live = product;
+        try {
+          if (product && product.id) {
+            const resp = await fetch(`${API_BASE}/items/${product.id}`);
+            if (resp.ok) {
+              const jr = await resp.json();
+              if (jr && jr.success && jr.data) live = jr.data;
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to fetch live product details', e);
+        }
+
+        title.textContent = live.name || product.name;
+        const src = getProductImage(live);
+        let liveImages = live.images;
+        if (typeof liveImages === 'string') {
+          try {
+            liveImages = JSON.parse(liveImages);
+          } catch (e) {
+            liveImages = [];
+          }
+        }
+        const imagesList = Array.isArray(liveImages) && liveImages.length > 0
+          ? liveImages
+          : (live.image ? [live.image] : [src]);
+
+        let imageSectionHtml = '';
+        if (imagesList.length > 1) {
+          imageSectionHtml = `
+            <div id="productImagesCarousel" class="carousel slide" data-bs-ride="carousel">
+              <div class="carousel-indicators">
+                ${imagesList.map((img, idx) => `
+                  <button type="button" data-bs-target="#productImagesCarousel" data-bs-slide-to="${idx}" class="${idx === 0 ? 'active' : ''}" aria-current="${idx === 0 ? 'true' : 'false'}" aria-label="Slide ${idx + 1}"></button>
+                `).join('')}
+              </div>
+              <div class="carousel-inner" style="border-radius: 10px; overflow: hidden; background: #f8f9fa;">
+                ${imagesList.map((img, idx) => `
+                  <div class="carousel-item ${idx === 0 ? 'active' : ''}">
+                    <img src="${img}" class="d-block w-100 product-detail-image" style="max-height: 320px; object-fit: contain;" alt="${live.name || product.name}" />
+                  </div>
+                `).join('')}
+              </div>
+              <button class="carousel-control-prev" type="button" data-bs-target="#productImagesCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true" style="filter: invert(1); width: 20px; height: 20px;"></span>
+                <span class="visually-hidden">Previous</span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#productImagesCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true" style="filter: invert(1); width: 20px; height: 20px;"></span>
+                <span class="visually-hidden">Next</span>
+              </button>
+            </div>
+          `;
+        } else {
+          imageSectionHtml = `<img src="${imagesList[0]}" class="img-fluid product-detail-image" style="max-height: 320px; object-fit: contain; width: 100%; border-radius: 10px;" alt="${live.name || product.name}" />`;
+        }
+
+        const lore = live.lore || product.lore || `A premium collectible from ${getProductBrand(live)} featuring ${getProductTheme(live)} energy and mystery.`;
+        body.innerHTML = `
+          <div class="row g-4">
+            <div class="col-md-6">
+              ${imageSectionHtml}
+            </div>
+            <div class="col-md-6">
+              <p class="small text-muted mb-2">${getProductBrand(live)} • ${getProductTheme(live)}</p>
+              <p>${live.description || 'No description available.'}</p>
+              <p><strong>Price:</strong> ₱${Number(live.price || product.price).toFixed(2)}</p>
+              <p><strong>Stock:</strong> ${Number(live.stock || 0) > 0 ? (live.stock || product.stock) : 'Out of Stock'}</p>
+              <div class="border rounded p-3 theme-soft-panel">
+                <h6 class="mb-2">Collector Lore</h6>
+                <p class="mb-0">${lore}</p>
+              </div>
+            </div>
+          </div>
+        `;
+
+        addCartBtn.disabled = (Number(live.stock || 0) <= 0);
+        buyBtn.disabled = (Number(live.stock || 0) <= 0);
+
+        addCartBtn.onclick = function() {
+          addToCart(live);
+          updateCartNavCount();
+          showCartToast(live.name, getProductImage(live));
+          // hide modal
+          const bsModal = document.getElementById('productDetailsModal');
+          if (bsModal) bsModal.style.display = 'none';
+        };
+
+        buyBtn.onclick = function() {
+          if (!requireLoginForCheckout()) return;
+          addToCart(live);
+          globalThis.location.href = 'cart.html';
+        };
+
+        // show modal
+        modal.style.display = 'block';
+      })();
+    }
+
+    document.addEventListener('click', function(event) {
+      if (event.target.id === 'detailsClose') {
+        const modal = document.getElementById('productDetailsModal');
+        if (modal) modal.style.display = 'none';
+      }
+    });
+
+    async function loadProducts() {
+      const statusEl = document.getElementById('productsStatus');
+      if (statusEl) statusEl.textContent = 'Products status: fetching...';
+      try {
+        const res = await fetch(apiUrl);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const result = await res.json();
+        if (!result || !result.success) throw new Error(result?.message || 'Fetch failed');
+        allProducts = result.data || [];
+        populateFilterOptions(allProducts);
+        renderProducts(allProducts);
+      } catch (error) {
+        const container = document.getElementById('productsContainer');
+        if (container) container.innerHTML = `<div class="debug-item">Fetch error: ${error.message}</div>`;
+        if (statusEl) statusEl.textContent = 'Products status: error';
+        console.error('loadProducts error', error);
+      }
+    }
+
+    function populateFilterOptions(products) {
+      const brandFilter = document.getElementById('brandFilter');
+      const themeFilter = document.getElementById('themeFilter');
+      if (!brandFilter || !themeFilter) return;
+
+      const brands = [...new Set(products.map(getProductBrand).filter(Boolean))].sort();
+      const themes = [...new Set(products.map(getProductTheme).filter(Boolean))].sort();
+
+      brandFilter.innerHTML = '<option value="">All Brands</option>' + brands.map((brand) => `<option value="${brand}">${brand}</option>`).join('');
+      themeFilter.innerHTML = '<option value="">All Themes</option>' + themes.map((theme) => `<option value="${theme}">${theme}</option>`).join('');
+    }
+
+    function attachFilterEvents() {
+      ['brandFilter', 'themeFilter', 'priceFilter', 'stockFilter', 'sortSelect'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('change', () => renderProducts(allProducts));
+        }
+      });
+      const searchBox = document.getElementById('catalogSearch');
+      if (searchBox) {
+        searchBox.addEventListener('input', () => renderProducts(allProducts));
+      }
+      const clearButton = document.getElementById('catalogSearchClear');
+      if (clearButton) {
+        clearButton.addEventListener('click', () => {
+          const searchBox = document.getElementById('catalogSearch');
+          if (searchBox) {
+            searchBox.value = '';
+            renderProducts(allProducts);
+          }
+        });
+      }
+
+      const clearBtn = document.getElementById('clearFiltersBtn');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          document.getElementById('brandFilter').value = '';
+          document.getElementById('themeFilter').value = '';
+          document.getElementById('priceFilter').value = '';
+          document.getElementById('stockFilter').value = '';
+          document.getElementById('sortSelect').value = 'featured';
+          renderProducts(allProducts);
+        });
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initNav();
+      const params = new URLSearchParams(globalThis.location.search);
+      const query = params.get('search') || '';
+      if (query) {
+        const searchBox = document.getElementById('catalogSearch');
+        if (searchBox) searchBox.value = query;
+      }
+      attachFilterEvents();
+      loadProducts();
+      updateCartNavCount();
+    });
+  </script>
+
+  <!-- Product Details Modal -->
+  <div class="modal" id="productDetailsModal" tabindex="-1" style="display:none;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="detailsTitle">Product Details</h5>
+          <button type="button" class="btn-close" id="detailsClose" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body" id="detailsBody">
+          <!-- Filled dynamically -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="detailsAddCart">Add to Cart</button>
+          <button class="btn btn-primary" id="detailsBuy">Buy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      loadThemePreference();
+    });
+
+    document.addEventListener('click', function(event) {
+      const modal = document.getElementById('productDetailsModal');
+      if (!modal) return;
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
+    

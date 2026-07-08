@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mystery Pop - Premium Blind Box & Collectibles</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" integrity="sha512-b2QcS5SsA8tZodcDtGRELiGv5SaKSk1vDHDaQRda0htPYWZ6046lr3kJ5bAAQdpV2mmA/4v0wQF9MyU6/pDIAg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- FONT IMPORTS -->
+  <link href="https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+    
+    /* Fallback for Norwester - using similar bold font */
+    @font-face {
+      font-family: 'Norwester';
+      src: url('https://www.fontsquirrel.com/fonts/download/norwester') format('truetype');
+      font-weight: bold;
+    }
+  </style>
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="light-mode public-page home-page">
+  <!-- NAVBAR -->
+  <nav class="custom-navbar">
+    <div class="container-fluid">
+      <div class="navbar-content">
+        <a class="navbar-brand" href="index.html">Mystery Pop</a>
+        <div class="navbar-right nav-items">
+          <div class="search-autocomplete">
+            <input id="homeSearch" type="search" placeholder="Search products..." autocomplete="off" aria-label="Search products" />
+            <div id="searchSuggestions" class="search-suggestions"></div>
+          </div>
+          <div id="navLinks" class="nav-items"></div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <div class="hero-section">
+    <!-- Animated background effects handled by ::before and ::after -->
+    
+    <!-- HERO CONTENT -->
+    <div class="hero-content">
+      <div class="hero-subtitle">Welcome to</div>
+      <h1 class="hero-title">Mystery Pop</h1>
+      <p class="hero-description" id="welcomeText">Discover the thrill of blind box collecting with curated drops and instant mystery.</p>
+      
+      <div class="cta-buttons" id="actionButtons">
+        <a href="products.html" class="cta-btn cta-btn-secondary">Catalog</a>
+        <a href="products.html" class="cta-btn">Unbox Now</a>
+      </div>
+      <div class="ticker-bar mt-4">
+        <span class="ticker-label">Live Unbox Ticker:</span>
+        <span id="tickerText">A rare chase figure was just unboxed! • New limited drop live now.</span>
+      </div>
+    </div>
+
+    <!-- HERO FOOTER -->
+    <div class="hero-footer">
+      <div class="footer-left">
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme">
+          <div class="toggle-circle">
+            <i class="fas fa-sun"></i>
+          </div>
+        </button>
+      </div>
+      <div class="footer-center">© 2026 Kim Ryan B. Macaroncio (BSIT-NS-2A-T). All rights reserved.</div>
+      <div class="footer-right">
+        <div class="footer-links"></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="page-section py-5">
+    <div class="container">
+      <div class="section-header text-center mb-4">
+        <h2 class="section-title">Featured Series</h2>
+        <p class="section-subtitle">Curated blind box drops, rotating every few seconds.</p>
+      </div>
+      <div class="row" id="featuredGrid"></div>
+    </div>
+  </section>
+
+  <section class="page-section py-5">
+    <div class="container">
+      <div class="section-header text-center mb-4">
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-subtitle">Easy steps to order, open, and receive your Mystery Pop collectible.</p>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-4 text-center">
+          <div class="how-step">
+            <div class="how-step-icon">1</div>
+            <h5>Browse the Catalog</h5>
+            <p>Explore products, filter by brand or theme, and pick your favorite blind box.</p>
+          </div>
+        </div>
+        <div class="col-md-4 text-center">
+          <div class="how-step">
+            <div class="how-step-icon">2</div>
+            <h5>Add to Cart</h5>
+            <p>Select quantity, apply coupons, and checkout with secure payment.</p>
+          </div>
+        </div>
+        <div class="col-md-4 text-center">
+          <div class="how-step">
+            <div class="how-step-icon">3</div>
+            <h5>Ship & Unbox</h5>
+            <p>Receive your mystery box at home, open it, and collect or trade your items.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCRIPTS -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="common.js"></script>
+  <script>
+    const featuredProducts = [];
+    let featuredIndex = 0;
+
+
+
+    // Dark mode toggle
+    function toggleTheme() {
+      const body = document.body;
+      const toggle = document.getElementById('themeToggle');
+      
+      body.classList.toggle('dark-mode');
+      body.classList.toggle('light-mode');
+      toggle.classList.toggle('dark-active');
+      
+      // Save preference
+      const isDarkMode = body.classList.contains('dark-mode');
+      localStorage.setItem('theme-preference', isDarkMode ? 'dark' : 'light');
+    }
+
+    // Load saved theme preference
+    function loadThemePreference() {
+      const saved = localStorage.getItem('theme-preference');
+      const body = document.body;
+      const toggle = document.getElementById('themeToggle');
+      
+      if (saved === 'dark') {
+        body.classList.remove('light-mode');
+        body.classList.add('dark-mode');
+        toggle.classList.add('dark-active');
+      }
+    }
+
+    // Initialize on load
+    function showFeatured() {
+      const container = document.getElementById('featuredGrid');
+      if (!container) return;
+      const items = featuredProducts.slice(featuredIndex, featuredIndex + 4);
+      container.innerHTML = items.map(product => `
+        <div class="col-md-3 mb-4">
+          <div class="card featured-card h-100">
+            <img src="${product.image || 'https://via.placeholder.com/320'}" class="card-img-top" alt="${product.name}" />
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">${product.name}</h5>
+              <p class="card-text text-muted">${product.description?.slice(0, 80) || 'Limited edition collectible'}</p>
+              <div class="mt-auto d-flex justify-content-between align-items-center">
+                <span class="text-primary fw-bold">₱${Number(product.price || 0).toFixed(2)}</span>
+                <a href="products.html" class="btn btn-sm btn-outline-primary">View</a>
+              </div>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    function rotateFeatured() {
+      if (!featuredProducts.length) return;
+      featuredIndex = (featuredIndex + 4) % featuredProducts.length;
+      showFeatured();
+    }
+
+    function initSearch() {
+      const searchInput = document.getElementById('homeSearch');
+      const suggestions = document.getElementById('searchSuggestions');
+      if (!searchInput || !suggestions) return;
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.trim().toLowerCase();
+        if (!query) {
+          suggestions.style.display = 'none';
+          return;
+        }
+        const matches = featuredProducts.filter(p => p.name.toLowerCase().includes(query) || (p.description||'').toLowerCase().includes(query));
+        suggestions.innerHTML = matches.slice(0, 5).map(p => `<div class="suggestion-item" data-id="${p.id}">${p.name}</div>`).join('');
+        suggestions.style.display = matches.length ? 'block' : 'none';
+      });
+      searchInput.addEventListener('keyup', (event) => {
+        if (event.key === 'Enter') {
+          const query = searchInput.value.trim();
+          if (query) {
+            globalThis.location.href = `products.html?search=${encodeURIComponent(query)}`;
+          }
+        }
+      });
+      suggestions.addEventListener('click', (event) => {
+        const target = event.target.closest('.suggestion-item');
+        if (!target) return;
+        globalThis.location.href = `products.html?search=${encodeURIComponent(target.textContent.trim())}`;
+      });
+      document.addEventListener('click', (event) => {
+        if (!event.target.closest('#searchSuggestions') && event.target !== searchInput) {
+          suggestions.style.display = 'none';
+        }
+      });
+    }
+
+    function loadFeaturedProducts() {
+      fetch(`${API_BASE}/items`)
+        .then(r => r.json())
+        .then(result => {
+          if (!result.success) return;
+          featuredProducts.length = 0;
+          featuredProducts.push(...result.data);
+          showFeatured();
+          setInterval(rotateFeatured, 5000);
+        })
+        .catch(() => {});
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadThemePreference();
+      initNav();
+      initSearch();
+      loadFeaturedProducts();
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9u+qDVVf23qD1f19crXtLW5ZwJJkiGnQ82Gv8qKBhTZc9d1KZLK8u8VyH" crossorigin="anonymous"></script>
+</body>
+</html>

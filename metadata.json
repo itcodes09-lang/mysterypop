@@ -1,0 +1,6 @@
+{
+  "name": "Mystery Pop Shop",
+  "description": "Premium Blind Box & Collectibles Store with dynamic unboxing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
